@@ -287,11 +287,55 @@ async function seedHotels() {
   console.log(`Seeded ${hotels.length} hotels.`);
 }
 
+async function seedDestinations() {
+  const count = await prisma.destination.count();
+  if (count > 0) {
+    console.log(`Destinations already seeded (${count} rows), skipping.`);
+    return;
+  }
+
+  const destinations = [
+    { name: 'Maldives', country: 'Indian Ocean', price: 65000, imageUrl: '/images/maldives.jpg', sortOrder: 1 },
+    { name: 'Thailand', country: 'Bangkok & Pattaya', price: 25000, imageUrl: '/images/thailand.jpg', sortOrder: 2 },
+    { name: 'Dubai', country: 'UAE', price: 32500, imageUrl: '/images/dubai.jpg', sortOrder: 3 },
+    { name: 'Singapore', country: 'Singapore', price: 35000, imageUrl: '/images/singapore.jpg', sortOrder: 4 },
+    { name: 'Switzerland', country: 'Europe', price: 145000, imageUrl: '/images/switzerland.jpg', sortOrder: 5 },
+    { name: 'Bali', country: 'Indonesia', price: 55000, imageUrl: '/images/bali.jpg', sortOrder: 6 },
+  ];
+
+  await prisma.destination.createMany({ data: destinations });
+  console.log(`Seeded ${destinations.length} destinations.`);
+}
+
+async function seedSiteSettings() {
+  await prisma.siteSetting.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      officeAddress: 'SkyVoyage, Dhaka, Bangladesh',
+      phoneHotline: '+880 1234 567890',
+      supportEmail: 'info@skyvoyage.com',
+      bookingPhone: '+880 1234 567890',
+      whatsappNumber: '+880 1234 567890',
+      privacyPolicy:
+        'We collect only the information needed to process your flight, hotel, package and visa bookings — name, contact details and passenger information. Your data is protected, never sold, and used only to complete your booking and send confirmations, invoices and support replies by email.',
+      termsConditions:
+        'Bookings are confirmed after our team contacts you and agrees all details by phone or WhatsApp. No online payment is taken on this website. Fares, availability and package prices can change until a booking is confirmed. Passengers must carry a valid passport and visa where required. Changes and cancellations follow the airline, hotel and package supplier rules shown at booking.',
+      refundPolicy:
+        'Refunds follow the airline / hotel / supplier policy for the booked fare or package. Service charges may be non-refundable. Any advance taken directly by a service provider is refunded by that provider by the method agreed with them, within the time stated when you booked.',
+    },
+  });
+  console.log('Seeded default site settings and legal texts.');
+}
+
 async function main() {
   await seedAdmin();
   await seedPackages();
   await seedFlights();
   await seedHotels();
+  await seedDestinations();
+  await seedSiteSettings();
 }
 
 main()

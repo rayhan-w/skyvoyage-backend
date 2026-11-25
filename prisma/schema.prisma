@@ -22,14 +22,34 @@ enum FlightStops {
   ONE_STOP
 }
 
+enum BookingStatus {
+  REQUESTED
+  CONFIRMED
+  CANCELLED
+}
+
+enum BookingItemType {
+  FLIGHT
+  PACKAGE
+  HOTEL
+  CUSTOM
+}
+
+enum QueryStatus {
+  NEW
+  REPLIED
+  CLOSED
+}
+
 model User {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   name         String
   mobile       String
-  email        String   @unique
+  email        String    @unique
   passwordHash String
-  role         Role     @default(CUSTOMER)
-  createdAt    DateTime @default(now())
+  role         Role      @default(CUSTOMER)
+  createdAt    DateTime  @default(now())
+  bookings     Booking[]
 }
 
 model Package {
@@ -77,4 +97,81 @@ model Hotel {
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Destination {
+  id        Int      @id @default(autoincrement())
+  name      String
+  country   String
+  price     Int
+  imageUrl  String
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id             Int             @id @default(autoincrement())
+  bookingCode    String          @unique
+  userId         Int?
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName   String
+  customerMobile String
+  customerEmail  String
+  passportNo     String?
+  itemTitle      String
+  itemType       BookingItemType @default(PACKAGE)
+  packageId      Int?
+  flightId       Int?
+  travelDate     String
+  note           String?
+  totalAmount    Int
+  status         BookingStatus   @default(REQUESTED)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  invoice        Invoice?
+}
+
+model Invoice {
+  id              Int           @id @default(autoincrement())
+  invoiceNo       String        @unique
+  bookingId       Int           @unique
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerName    String
+  customerEmail   String
+  customerMobile  String
+  itemDescription String
+  totalAmount     Int
+  status          BookingStatus @default(REQUESTED)
+  issuedAt        DateTime      @default(now())
+}
+
+model Query {
+  id         Int         @id @default(autoincrement())
+  queryCode  String      @unique
+  name       String
+  mobile     String
+  email      String
+  type       String
+  service    String?
+  message    String
+  status     QueryStatus @default(NEW)
+  adminReply String?
+  repliedAt  DateTime?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model SiteSetting {
+  id              Int      @id @default(1)
+  officeAddress   String
+  phoneHotline    String
+  supportEmail    String
+  bookingPhone    String
+  whatsappNumber  String
+  privacyPolicy   String
+  termsConditions String
+  refundPolicy    String
+  updatedAt       DateTime @updatedAt
 }
